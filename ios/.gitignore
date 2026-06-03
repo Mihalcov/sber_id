@@ -26,6 +26,9 @@ GeneratedPluginRegistrant.m
 
 xcuserdata
 
+.build/
+.swiftpm/
+
 *.moved-aside
 
 *.pyc

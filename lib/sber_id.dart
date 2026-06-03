@@ -1,4 +1,9 @@
 export 'src/models/auth_response.dart';
+export 'src/models/sber_id_error_code.dart';
+export 'src/models/sber_id_exception.dart';
 export 'src/models/sber_id_config.dart';
-
+export 'src/models/sber_id_login_mode.dart';
+export 'src/models/sber_id_login_options.dart';
 export 'src/sber_id_api.dart';
+export 'src/widgets/sber_id_button.dart';
+export 'src/widgets/sber_id_elk_container.dart';

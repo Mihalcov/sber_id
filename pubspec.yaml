@@ -1,5 +1,5 @@
 name: sber_id
-description: "Flutter plugin for Sber ID authentication with native iOS SDK integration. Provides seamless authentication flow, automatic app detection, and comprehensive setup validation for iOS applications."
+description: "Flutter plugin for Sber ID authentication (SIDSDK on iOS, SIDSDK_CORE on Android)."
 version: 0.0.1+1
 homepage: https://github.com/nurullohabduvohidov/sber_id
 repository: https://github.com/nurullohabduvohidov/sber_id
@@ -26,3 +26,4 @@ flutter:
         pluginClass: SberIdPlugin
       ios:
         pluginClass: SberIdPlugin
+        swiftPackage: sber_id

@@ -1,3 +1,10 @@
+## 0.0.1+2
+
+### Dependencies
+- Android: SIDSDK_CORE 1.2.3 → **1.3.0** (Maven Central latest stable)
+- Android: SIDSDK_ELK **1.3.0** (unchanged)
+- iOS: SIDSDK **~> 1.7.4** (latest 1.7.x; CocoaPods / SPM)
+
 ## 0.0.1+1
 
 ### Features

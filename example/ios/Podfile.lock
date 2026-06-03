@@ -1,33 +1,16 @@
 PODS:
-  - ClickstreamSDK (1.5.0)
   - Flutter (1.0.0)
-  - sber_id (0.0.4):
-    - Flutter
-    - SIDSDK (~> 1.6.0)
-  - SIDSDK (1.6.2):
-    - ClickstreamSDK (~> 1.5.0)
 
 DEPENDENCIES:
   - Flutter (from `Flutter`)
-  - sber_id (from `.symlinks/plugins/sber_id/ios`)
-
-SPEC REPOS:
-  trunk:
-    - ClickstreamSDK
-    - SIDSDK
 
 EXTERNAL SOURCES:
   Flutter:
     :path: Flutter
-  sber_id:
-    :path: ".symlinks/plugins/sber_id/ios"
 
 SPEC CHECKSUMS:
-  ClickstreamSDK: 591cbf0c2f96bcaba6a36365a94a19f4463a1ae5
-  Flutter: e0871f40cf51350855a761d2e70bf5af5b9b5de7
-  sber_id: 2b5a4b396c276595cc11b28a14b4c2cce9899cee
-  SIDSDK: 7583b5ef8406ca4ba76a3142eade98fcb281b41f
+  Flutter: cabc95a1d2626b1b06e7179b784ebcf0c0cde467
 
-PODFILE CHECKSUM: 5c7310d36eea31f530ba7c2e8f7fac5b3d4cbd74
+PODFILE CHECKSUM: d71a8f9d234bf288cee64b372c30c196c8075224
 
 COCOAPODS: 1.16.2

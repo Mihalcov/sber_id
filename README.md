@@ -1,185 +1,258 @@
 # Sber ID Flutter Plugin
 
-Flutter plugin for Sber ID authentication on iOS platform.
+Flutter plugin for [Sber ID](https://developers.sber.ru/docs/ru/sberid/service/overview) authentication on **iOS** and **Android**, wrapping native SDKs:
+
+- Android: [SIDSDK_CORE](https://developers.sber.ru/docs/ru/sberid/sdk/androidsdk/core/quick-start) (+ optional ELK)
+- iOS: [SIDSDK](https://developers.sber.ru/docs/ru/sberid/sdk/iossdk/connection) via SPM / CocoaPods
 
 ## Features
 
-- ✅ Sber ID authentication (iOS)
-- ✅ Check if Sber ID app is installed
-- ✅ Web and native app authentication flows
-- 🚧 Android support (coming soon)
+- Initialize SDK with `clientId`, `redirectUri`, scopes, stand
+- PKCE login with `authCode`, `state`, `nonce`, **`codeVerifier`** returned to Dart
+- Login modes: `standard`, `web` (OIDC/Custom Tab), `webView`, `autoAuth`, **`seamless`**
+- Seamless SSO from Sber Bank app (`extractSsoBaseUrl`, `loginSeamless`, cold-start deeplink on Android)
+- Native **Sber ID button** (`SBerIdButton` Platform View)
+- Native **ELK personal cabinet** (`SBerIdElkContainer` Platform View)
+- Check if Sber Bank app is installed
+- Logout
 
-## Platform Support
+## Platform support
 
-| Platform | Support | Min Version |
-|----------|---------|-------------|
-| iOS      | ✅      | 14.0+       |
-| Android  | 🚧      | Coming soon |
+| Platform | Min version | Native SDK |
+|----------|-------------|------------|
+| iOS      | 14.0+       | SIDSDK ~> 1.7.4 |
+| Android  | 26+ (API)   | SIDSDK_CORE 1.3.0, SIDSDK_ELK 1.3.0 |
 
 ## Installation
 
-Add this to your `pubspec.yaml`:
-
 ```yaml
 dependencies:
-  sber_id: ^0.0.1+1
+  sber_id:
+    path: ../sber_id   # or pub.dev when published
 ```
 
-## iOS Setup
+## iOS setup
 
-### 1. Minimum iOS Version
-Ensure your iOS deployment target is 14.0+ in `ios/Podfile`:
+The plugin supports **Swift Package Manager** (recommended when using Flutter 3.24+) and **CocoaPods**.
 
-```ruby
-platform :ios, '14.0'
+```bash
+flutter config --enable-swift-package-manager
 ```
 
-### 2. Configure URL Scheme
+SPM layout: [`ios/sber_id/Package.swift`](ios/sber_id/Package.swift) (depends on `SIDSDK` and `FlutterFramework` at build time).
 
-#### Step 2.1: Choose your URL scheme
-Your `redirectUri` should follow this format: `yourapp://auth`
-
-**Examples:**
-- App name "MyStore" → `mystore://auth`
-- App name "ShopApp" → `shopapp://auth`
-
-#### Step 2.2: Add URL Scheme to Info.plist
-
-Replace `yourapp` with your chosen scheme:
+1. **Deployment target** 14.0+ (`ios/Podfile` or Xcode).
+2. **URL scheme** in `Info.plist` (must match `redirectUri`):
 
 ```xml
 <key>CFBundleURLTypes</key>
 <array>
-    <dict>
-        <key>CFBundleURLName</key>
-        <string>com.example.app</string>
-        <key>CFBundleURLSchemes</key>
-        <array>
-            <string>yourapp</string> <!-- Replace with your scheme (e.g., mystore, mango) -->
-        </array>
-    </dict>
+  <dict>
+    <key>CFBundleTypeRole</key>
+    <string>Editor</string>
+    <key>CFBundleURLSchemes</key>
+    <array>
+      <string>yourapp</string>
+    </array>
+  </dict>
 </array>
 ```
 
-**For example for Mango app:**
-```xml
-<key>CFBundleURLTypes</key>
-<array>
-    <dict>
-        <key>CFBundleURLName</key>
-        <string>com.mango.app</string>
-        <key>CFBundleURLSchemes</key>
-        <array>
-            <string>mango</string>
-        </array>
-    </dict>
-</array>
+3. **LSApplicationQueriesSchemes**, **NSAppTransportSecurity** for `id.sber.ru` — see [project configuration](https://developers.sber.ru/docs/ru/sberid/sdk/iossdk/configuration).
+4. **AppToken / ELK** (optional): add `AppIdentifierPrefix`, Keychain group `ru.sid.iphone.shared` — see [ELK iOS manual](https://developers.sber.ru/docs/ru/sberid/elk/ios/manualios).
+5. **SceneDelegate** (if used):
+
+```swift
+import sber_id
+
+func scene(_ scene: UIScene, openURLContexts URLContexts: Set<UIOpenURLContext>) {
+    guard let url = URLContexts.first?.url else { return }
+    SberIdPlugin.handleURL(url)
+}
 ```
 
-### 3. Register redirectUri with Sber ID
+Register `clientId` and `redirectUri` with Sber ID before production: **support_sberid@sber.ru**.
 
-⚠️ **Important:** You must register your `redirectUri` with Sber ID:
+## Android setup
 
-Contact Sber ID support (`support@ecom.sberbank.ru`) to register your `clientId` and `redirectUri` before using in production.
-
-### 4. Add LSApplicationQueriesSchemes
-
-```xml
-<key>LSApplicationQueriesSchemes</key>
-<array>
-    <string>sberbankidexternallogin</string>
-    <string>sbolidexternallogin</string>
-    <string>btripsexpenses</string>
-    <string>ios-app-smartonline</string>
-    <string>sberid</string>
-    <string>sberbankid</string>
-</array>
-```
-
-### 5. Add NSAppTransportSecurity
+1. **minSdk 26** in `android/app/build.gradle`.
+2. **Deeplink** on `MainActivity` ([quick start §5.1](https://developers.sber.ru/docs/ru/sberid/sdk/androidsdk/core/quick-start)):
 
 ```xml
-<key>NSAppTransportSecurity</key>
-<dict>
-    <key>NSExceptionDomains</key>
-    <dict>
-        <key>id.sber.ru</key>
-        <dict>
-            <key>NSExceptionAllowsInsecureHTTPLoads</key>
-            <true/>
-        </dict>
-    </dict>
-</dict>
+<activity
+    android:name=".MainActivity"
+    android:exported="true"
+    android:launchMode="singleTop"
+    ...>
+    <intent-filter>
+        <action android:name="android.intent.action.VIEW" />
+        <category android:name="android.intent.category.DEFAULT" />
+        <category android:name="android.intent.category.BROWSABLE" />
+        <data
+            android:scheme="yourapp"
+            android:host="auth" />
+    </intent-filter>
+</activity>
 ```
+
+3. **ELK** (optional): pass `partnerProfileUrl` in `SBerIdConfig` — calls `SIDELK.setProfileUrl` on Android; iOS uses `applyMainPreferences(partnerProfileUrl:)`.
+
+## ELK (Единый личный кабинет)
+
+ELK is **separate from OAuth UI** — users must be logged in via Sber ID first. For AppToken / partner SSO, add scope `mapp_sso` and follow:
+
+- Android: [ELK Android SDK](https://developers.sber.ru/docs/ru/sberid/elk/androidsdk/android)
+- iOS: [ELK iOS manual](https://developers.sber.ru/docs/ru/sberid/elk/ios/manualios) (Keychain group `ru.sid.iphone.shared`, `AppIdentifierPrefix` in Info.plist)
+
+```dart
+await SBerId.instance.initialize(
+  SBerIdConfig(
+    clientId: '...',
+    redirectUri: 'yourapp://auth',
+    partnerName: 'Your App',
+    partnerProfileUrl: 'https://your-profile-url-from-sber',
+    userId: 'optional-at-init',
+    scopes: ['openid', 'name', 'email', 'mapp_sso'],
+  ),
+);
+
+// After login — set OIDC sub / partner user id for ELK widgets
+await SBerId.instance.setUserId(userSub);
+
+SBerIdElkContainer(
+  containerName: 'offer', // Android ELKContainerView; iOS additionalPath
+  containerVersion: 3,
+  height: 400,
+  onEvent: (e) => debugPrint('ELK: ${e.type} ${e.widgetName}'),
+);
+```
+
+| Parameter | Android | iOS |
+|-----------|---------|-----|
+| `partnerProfileUrl` | `SIDELK.setProfileUrl` at init | `applyMainPreferences` |
+| `userId` | `SID.Settings.setMainSettings(userID)` | `applyMainPreferences(userID:)` |
+| `setUserId()` | Updates user id after login | Same |
+
+Example app: **ELK demo screen** (`example/lib/elk_screen.dart`).
 
 ## Usage
 
 ```dart
 import 'package:sber_id/sber_id.dart';
 
-void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
+await SBerId.instance.initialize(
+  SBerIdConfig(
+    clientId: 'your-client-id',
+    redirectUri: 'yourapp://auth',
+    partnerName: 'Your App',
+    partnerProfileUrl: 'https://your-profile-url', // optional ELK
+  ),
+);
 
-  // Initialize with your credentials
-  await SBerId.instance.initialize(
-    SBerIdConfig(
-      clientId: 'your-client-id',           // From Sber ID developer portal
-      redirectUri: 'yourapp://auth',        // Must match Info.plist URL scheme
-      partnerName: 'Your App Name',         // Your app name
-    ),
+// Standard login (Sber app → web fallback)
+final response = await SBerId.instance.login(
+  options: SBerIdLoginOptions(mode: SBerIdLoginMode.standard),
+);
+
+// Web / OIDC
+await SBerId.instance.login(
+  options: SBerIdLoginOptions(
+    mode: SBerIdLoginMode.web,
+    customTabRedirectUri: 'yourapp://auth',
+  ),
+);
+
+// Native button — onPressed or auto login (standard)
+SBerIdButton(
+  clientId: 'your-client-id',
+  onPressed: () async {
+    final r = await SBerId.instance.login();
+    // handle r
+  },
+);
+// Without onPressed: tap starts login(mode: SBerIdLoginMode.standard) automatically
+
+if (response?.isSuccess == true) {
+  await yourBackend.exchange(
+    authCode: response!.authCode!,
+    codeVerifier: response.codeVerifier!,
+    state: response.state,
+    nonce: response.nonce,
+    redirectUri: 'yourapp://auth',
   );
-
-  runApp(MyApp());
 }
-
-// Rest of the example code...
 ```
 
-## Configuration
+**Шаг 2 OAuth (обмен code → tokens на сервере):** см. [docs/OAUTH_BACKEND.md](docs/OAUTH_BACKEND.md) — PKCE, `state`/`nonce`, типичные ошибки `invalid_grant`.
 
-### Required Parameters
+## Login modes
 
-| Parameter | Description | Example |
-|-----------|-------------|---------|
-| `clientId` | Your client ID from Sber ID developer portal | `'abc123-def456-ghi789'` |
-| `redirectUri` | Your app's custom URL scheme (must be registered with Sber ID) | `'myapp://auth'` |
-| `partnerName` | Your company or application name | `'My Company'` |
+| Dart `SBerIdLoginMode` | Android | iOS |
+|------------------------|---------|-----|
+| `standard` | `SIDLogin.loginWithID` | `SID.login.auth` |
+| `web` | `loginWithIDToCustomTab` | `webAuth` |
+| `webView` | `loginWithIDToWebView` | `loginWithIDToWebView` |
+| `autoAuth` | `autoAuth` | `autoAuth` |
+| `seamless` | `getSeamlessUriScheme` + `autoAuth` | `SIDUtils.getSSOUrlStringFrom` + `autoAuth` |
 
-### URL Scheme Matching
+## Seamless SSO (from Sber Bank app)
 
-Make sure your configuration matches:
+When the user opens your app from Sber Bank with a deeplink containing `sberIDRedirect`, use seamless login:
 
-**In your Dart code:**
 ```dart
-redirectUri: 'mango://auth'
+// Parse SSO base URL from deeplink (optional; loginSeamless does this)
+final sso = await SBerId.instance.extractSsoBaseUrl(deeplink);
+
+// After user returns from Sber Bank with your redirectUri
+final response = await SBerId.instance.loginSeamless(
+  seamlessDeeplink: deeplink,
+);
+
+// Android cold start: deeplink in launch intent
+final launchDeeplink = await SBerId.instance.getLaunchSeamlessDeeplink();
+if (launchDeeplink != null) {
+  await SBerId.instance.loginSeamless(seamlessDeeplink: launchDeeplink);
+}
 ```
 
-**In Info.plist:**
-```xml
-<string>mango</string>  <!-- Same scheme name -->
+On iOS, handle the incoming URL in `SceneDelegate` / `AppDelegate` (e.g. with `uni_links`) and pass the full URL string to `loginSeamless`. `getLaunchSeamlessDeeplink` is Android-only.
+
+## Example
+
+```bash
+cd example
+flutter run
 ```
 
-## Troubleshooting
+## Error handling
 
-### Common Issues
+`login()` always completes with [SBerIdAuthResponse] (no throw on auth failure). Check `isSuccess`, `errorCode`, and `isCancelled`.
 
-1. **"Invalid redirect URI" error**
-    - Ensure `redirectUri` is registered with Sber ID
-    - Check URL scheme matches Info.plist exactly
+| `errorCode` | Meaning |
+|-------------|---------|
+| `AUTH_CANCELLED` | User closed web/Safari or flow ended without redirect |
+| `LOGIN_SUPERSEDED` | New `login()` replaced a pending one |
+| `INVALID_REDIRECT` | Incoming URL scheme/host ≠ `redirectUri` |
+| `NOT_INITIALIZED` | `initialize()` not called |
+| `NO_ACTIVITY` / `NO_VIEW_CONTROLLER` | No foreground Activity / VC |
+| `AUTH_ERROR` | SDK or server rejected login |
 
-2. **App doesn't open after authentication**
-    - Verify URL scheme in Info.plist
-    - Check `CFBundleURLSchemes` array
+`initialize()`, `setUserId()`, `logout()` throw [SBerIdException] on platform errors.
 
-3. **"Sber ID app not found" error**
-    - Add all required schemes to `LSApplicationQueriesSchemes`
+```dart
+final r = await SBerId.instance.login();
+if (r?.isCancelled == true) {
+  // user dismissed
+} else if (r?.isSuccess != true) {
+  debugPrint('${r?.errorCode}: ${r?.error}');
+}
+```
 
+## Support
+
+- Plugin issues: [GitHub](https://github.com/nurullohabduvohidov/sber_id)
+- Sber ID: support_sberid@sber.ru
 
 ## License
 
 MIT License
-
-## Support
-
-For issues and feature requests, please visit our [GitHub repository](https://github.com/nurullohabduvohidov/sber_id).
-

@@ -1,180 +1,181 @@
 import 'package:flutter/material.dart';
-import 'dart:async';
 import 'package:sber_id/sber_id.dart';
 
-void main() async {
+import 'elk_screen.dart';
+
+void main() {
   WidgetsFlutterBinding.ensureInitialized();
-
-  await SBerId.instance.initialize(
-    SBerIdConfig(
-      clientId: 'your-client-id',
-      redirectUri: 'yourapp://auth',
-      partnerName: 'Your App Name',
-    ),
-  );
-
-
-
-  runApp(const MyApp());
+  runApp(const SberIdExampleApp());
 }
 
-class MyApp extends StatefulWidget {
-  const MyApp({super.key});
+class SberIdExampleApp extends StatefulWidget {
+  const SberIdExampleApp({super.key});
 
   @override
-  State<MyApp> createState() => _MyAppState();
+  State<SberIdExampleApp> createState() => _SberIdExampleAppState();
 }
 
-class _MyAppState extends State<MyApp> {
-  String _status = 'Ready';
-  bool _isInstalled = false;
-  SBerIdAuthResponse? _authResult;
+class _SberIdExampleAppState extends State<SberIdExampleApp> {
+  static const _clientId = 'YOUR_CLIENT_ID';
+  static const _redirectUri = 'sberidexample://auth';
+  static const _partnerName = 'Sber ID Example';
+  /// URL from Sber ELK cabinet; required for Android ELK widgets.
+  static const _partnerProfileUrl = 'https://your-partner-profile-url';
+
+  final _seamlessController = TextEditingController();
+
+  String _status = 'Not initialized';
+  bool _initialized = false;
+
+  @override
+  void dispose() {
+    _seamlessController.dispose();
+    super.dispose();
+  }
 
   @override
   void initState() {
     super.initState();
-    _checkSberIdInstallation();
+    _init();
   }
 
-  Future<void> _checkSberIdInstallation() async {
+  Future<void> _init() async {
     try {
-      final isInstalled = await SBerId.instance.isSBerIdInstalled();
+      await SBerId.instance.initialize(
+        const SBerIdConfig(
+          clientId: _clientId,
+          redirectUri: _redirectUri,
+          partnerName: _partnerName,
+          partnerProfileUrl: _partnerProfileUrl,
+          scopes: ['openid', 'name', 'email', 'mapp_sso'],
+        ),
+      );
       setState(() {
-        _isInstalled = isInstalled;
-        if (isInstalled) {
-          _status = 'Sber ID app installed - Native authentication available';
-        } else {
-          _status = 'Sber ID app not installed - Web authentication available';
-        }
+        _initialized = true;
+        _status = 'SDK initialized';
       });
     } catch (e) {
-      setState(() {
-        _status = 'Error: $e';
-      });
+      setState(() => _status = 'Init error: $e');
     }
   }
 
-  Future<void> _loginWithSBerId() async {
+  Future<void> _loginSeamlessFromField(TextEditingController controller) async {
+    if (!_initialized) return;
+    final deeplink = controller.text.trim();
+    if (deeplink.isEmpty) {
+      setState(() => _status = 'Enter seamless deeplink from Sber Bank');
+      return;
+    }
+    setState(() => _status = 'Parsing SSO...');
+    final sso = await SBerId.instance.extractSsoBaseUrl(deeplink);
+    setState(() => _status = 'ssoBaseUrl: ${sso ?? "(null)"}\nStarting seamless login...');
+    final response = await SBerId.instance.loginSeamless(seamlessDeeplink: deeplink);
     setState(() {
-      _status = 'Logging in...';
+      if (response?.isSuccess == true) {
+        _status =
+            'Seamless OK\nauthCode: ${response?.authCode}\ncodeVerifier: ${response?.codeVerifier}';
+      } else {
+        _status = 'Seamless failed: ${response?.error ?? "unknown"}';
+      }
     });
-
-    try {
-      final result = await SBerId.instance.login();
-      setState(() {
-        _authResult = result;
-        if (result?.isSuccess == true) {
-          _status = 'Login successful!';
-        } else {
-          _status = 'Login failed: ${result?.error}';
-        }
-      });
-    } catch (e) {
-      setState(() {
-        _status = 'Login error: $e';
-      });
-    }
   }
 
-  Future<void> _logout() async {
-    try {
-      await SBerId.instance.logout();
-      setState(() {
-        _authResult = null;
-        _status = 'Logout successful';
-      });
-    } catch (e) {
-      setState(() {
-        _status = 'Logout error: $e';
-      });
-    }
+  Future<void> _checkLaunchSeamless() async {
+    if (!_initialized) return;
+    final deeplink = await SBerId.instance.getLaunchSeamlessDeeplink();
+    setState(() => _status = deeplink == null
+        ? 'No launch seamless deeplink (Android intent)'
+        : 'Launch deeplink:\n$deeplink');
+  }
+
+  Future<void> _login(SBerIdLoginMode mode) async {
+    if (!_initialized) return;
+    setState(() => _status = 'Authenticating (${mode.name})...');
+    final response = await SBerId.instance.login(
+      options: SBerIdLoginOptions(mode: mode),
+    );
+    setState(() {
+      if (response?.isSuccess == true) {
+        _status =
+            'Success\nauthCode: ${response?.authCode}\ncodeVerifier: ${response?.codeVerifier}';
+      } else {
+        _status = 'Failed: ${response?.error ?? "unknown"}';
+      }
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       home: Scaffold(
-        appBar: AppBar(
-          title: const Text('Sber ID Example'),
-          backgroundColor: Colors.green,
-        ),
+        appBar: AppBar(title: const Text('Sber ID Example')),
         body: Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: const EdgeInsets.all(16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    children: [
-                      Icon(
-                        _isInstalled ? Icons.check_circle : Icons.info,
-                        size: 48,
-                        color: _isInstalled ? Colors.green : Colors.blue,
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        _status,
-                        style: Theme.of(context).textTheme.titleMedium,
-                        textAlign: TextAlign.center,
-                      ),
-                    ],
-                  ),
-                ),
+              Text(_status),
+              const SizedBox(height: 16),
+              SBerIdButton(
+                clientId: _clientId,
+                onPressed: _initialized ? () => _login(SBerIdLoginMode.standard) : null,
               ),
-              const SizedBox(height: 20),
-              ElevatedButton.icon(
-                onPressed: _loginWithSBerId,
-                icon: Icon(_isInstalled ? Icons.login : Icons.web),
-                label: Text(_isInstalled ? 'Login with Sber ID App' : 'Login via Web'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.green,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.all(16),
-                ),
+              const SizedBox(height: 16),
+              FilledButton(
+                onPressed: _initialized ? () => _login(SBerIdLoginMode.standard) : null,
+                child: const Text('Login (standard)'),
               ),
-              const SizedBox(height: 10),
-              ElevatedButton.icon(
-                onPressed: _authResult != null ? _logout : null,
-                icon: const Icon(Icons.logout),
-                label: const Text('Logout'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.red,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.all(16),
-                ),
+              FilledButton(
+                onPressed: _initialized ? () => _login(SBerIdLoginMode.web) : null,
+                child: const Text('Login (web/OIDC)'),
               ),
-              const SizedBox(height: 10),
-              TextButton(
-                onPressed: _checkSberIdInstallation,
-                child: const Text('Check Again'),
+              FilledButton(
+                onPressed: _initialized
+                    ? () async {
+                        final installed = await SBerId.instance.isSBerIdInstalled();
+                        setState(() => _status = 'Sber app installed: $installed');
+                      }
+                    : null,
+                child: const Text('Check Sber app'),
               ),
-              if (_authResult != null) ...[
-                const SizedBox(height: 20),
-                Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Authentication Result:',
-                          style: Theme.of(context).textTheme.titleMedium,
-                        ),
-                        const SizedBox(height: 8),
-                        Text('Success: ${_authResult!.isSuccess}'),
-                        if (_authResult!.authCode != null)
-                          Text('Auth Code: ${_authResult!.authCode}'),
-                        if (_authResult!.state != null)
-                          Text('State: ${_authResult!.state}'),
-                        if (_authResult!.error != null)
-                          Text('Error: ${_authResult!.error}'),
-                      ],
-                    ),
-                  ),
+              const Divider(),
+              const Text('Seamless SSO (deeplink from Sber Bank)'),
+              TextField(
+                controller: _seamlessController,
+                decoration: const InputDecoration(
+                  hintText: 'Paste deeplink with sberIDRedirect',
+                  border: OutlineInputBorder(),
                 ),
-              ],
+                maxLines: 2,
+              ),
+              FilledButton(
+                onPressed: _initialized
+                    ? () => _loginSeamlessFromField(_seamlessController)
+                    : null,
+                child: const Text('Login seamless'),
+              ),
+              OutlinedButton(
+                onPressed: _initialized ? _checkLaunchSeamless : null,
+                child: const Text('Check launch deeplink (Android)'),
+              ),
+              const Divider(),
+              OutlinedButton(
+                onPressed: _initialized
+                    ? () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute<void>(
+                            builder: (_) => const ElkDemoScreen(
+                              clientId: _clientId,
+                              redirectUri: _redirectUri,
+                              partnerName: _partnerName,
+                              partnerProfileUrl: _partnerProfileUrl,
+                            ),
+                          ),
+                        );
+                      }
+                    : null,
+                child: const Text('ELK demo screen'),
+              ),
             ],
           ),
         ),

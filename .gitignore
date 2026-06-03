@@ -1,3 +1,9 @@
+# Local prompts for Cursor (do not publish to GitHub)
+PROMPTS.md
+**/PROMPTS.md
+.cursor/prompts/
+**/.cursor/prompts/
+
 # Miscellaneous
 *.class
 *.log

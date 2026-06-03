@@ -1,4 +1,4 @@
-package com.plugin.sber_id_example
+package com.example.sber_id_example
 
 import io.flutter.embedding.android.FlutterActivity
 
