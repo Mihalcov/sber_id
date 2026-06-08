@@ -8,9 +8,7 @@ import io.flutter.plugin.platform.PlatformViewFactory
 import sid.sdk.core.auth.model.SIDButtonModel
 import sid.sdk.core.auth.view.SIDButton
 
-class SberIdButtonFactory(
-    private val appContext: Context,
-) : PlatformViewFactory(StandardMessageCodec.INSTANCE) {
+class SberIdButtonFactory : PlatformViewFactory(StandardMessageCodec.INSTANCE) {
 
     override fun create(context: Context, viewId: Int, args: Any?): PlatformView {
         @Suppress("UNCHECKED_CAST")
@@ -30,7 +28,8 @@ class SberIdButtonFactory(
             null,
             false,
         )
-        val button = SIDButton(appContext, null, 0, model)
+        // SIDButton needs a visual Context (Activity), not ApplicationContext.
+        val button = SIDButton(context, null, 0, model)
         button.setOnClickListener {
             SberIdButtonEvents.notifyPressed(viewId)
         }

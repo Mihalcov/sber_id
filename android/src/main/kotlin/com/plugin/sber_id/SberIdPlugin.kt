@@ -45,7 +45,7 @@ class SberIdPlugin : FlutterPlugin, MethodCallHandler, ActivityAware, PluginRegi
         SberIdElkEvents.register(flutterPluginBinding.binaryMessenger)
         flutterPluginBinding.platformViewRegistry.registerViewFactory(
             "sber_id_button",
-            SberIdButtonFactory(flutterPluginBinding.applicationContext),
+            SberIdButtonFactory(),
         )
         flutterPluginBinding.platformViewRegistry.registerViewFactory(
             "sber_id_elk",
