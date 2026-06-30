@@ -1,9 +1,10 @@
 ## 0.0.1+2
 
 ### Dependencies
-- Android: SIDSDK_CORE 1.2.3 → **1.3.0** (Maven Central latest stable)
-- Android: SIDSDK_ELK **1.3.0** (unchanged)
-- iOS: SIDSDK **~> 1.7.4** (latest 1.7.x; CocoaPods / SPM)
+- Android: SIDSDK_CORE 1.3.1, SIDSDK_ELK 1.3.1 (ELK 1.3.2 требует CORE 1.3.2, пока не в Maven)
+- Android: androidx fragment-ktx 1.8.8, lifecycle-runtime-ktx 2.9.2
+- Dart: flutter_lints 6.0.0, plugin_platform_interface ^2.1.8
+- iOS: SIDSDK ~> 1.7.4 (unchanged)
 
 ## 0.0.1+1
 

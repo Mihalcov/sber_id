@@ -21,7 +21,7 @@ Flutter plugin for [Sber ID](https://developers.sber.ru/docs/ru/sberid/service/o
 | Platform | Min version | Native SDK |
 |----------|-------------|------------|
 | iOS      | 14.0+       | SIDSDK ~> 1.7.4 |
-| Android  | 26+ (API)   | SIDSDK_CORE 1.3.0, SIDSDK_ELK 1.3.0 |
+| Android  | 26+ (API)   | SIDSDK_CORE 1.3.1, SIDSDK_ELK 1.3.1 |
 
 ## Installation
 

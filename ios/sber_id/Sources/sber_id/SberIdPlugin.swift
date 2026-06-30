@@ -253,8 +253,8 @@ public class SberIdPlugin: NSObject, FlutterPlugin {
             "isSuccess": true,
             "authCode": response.authCode ?? "",
             "state": response.state ?? "",
-            "nonce": response.nonce,
-            "codeVerifier": codeVerifier ?? NSNull(),
+            "nonce": response.nonce as Any? ?? NSNull(),
+            "codeVerifier": codeVerifier as Any? ?? NSNull(),
         ])
         flutterAuthResult = nil
         codeVerifier = nil
