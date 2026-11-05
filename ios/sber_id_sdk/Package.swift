@@ -4,12 +4,12 @@
 import PackageDescription
 
 let package = Package(
-    name: "sber_id",
+    name: "sber_id_sdk",
     platforms: [
         .iOS("15.0"),
     ],
     products: [
-        .library(name: "sber-id", targets: ["sber_id"]),
+        .library(name: "sber-id-sdk", targets: ["sber_id_sdk"]),
     ],
     dependencies: [
         .package(name: "FlutterFramework", path: "../FlutterFramework"),
@@ -17,7 +17,7 @@ let package = Package(
     ],
     targets: [
         .target(
-            name: "sber_id",
+            name: "sber_id_sdk",
             dependencies: [
                 .product(name: "FlutterFramework", package: "FlutterFramework"),
                 .product(name: "SIDSDK", package: "SIDSDK"),

@@ -1,6 +1,6 @@
 name: sber_id_sdk
-description: "Плагин Flutter для входа через Сбер ID на iOS и Android. Поддержать проект: https://messenger.sbrf.ru/sl/XMNhVd5RNSjvfnHRu"
-version: 0.2.0
+description: "Flutter plugin for Sber ID sign-in on iOS and Android. Support the project: https://messenger.sbrf.ru/sl/XMNhVd5RNSjvfnHRu"
+version: 0.2.1
 homepage: https://github.com/Mihalcov/sber_id
 repository: https://github.com/Mihalcov/sber_id
 issue_tracker: https://github.com/Mihalcov/sber_id/issues
@@ -31,4 +31,4 @@ flutter:
         pluginClass: SberIdPlugin
       ios:
         pluginClass: SberIdPlugin
-        swiftPackage: sber_id
+        swiftPackage: sber_id_sdk

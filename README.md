@@ -1,38 +1,40 @@
-# Плагин Сбер ID для Flutter
+# Sber ID plugin for Flutter
 
-Плагин [Сбер ID](https://developers.sber.ru/docs/ru/sberid/service/overview) для **iOS** и **Android**. Оборачивает нативные SDK:
+Russian guide: [doc/README.ru.md](doc/README.ru.md)
 
-**Поддержать проект:** [сбор в СберБанк Онлайн](https://messenger.sbrf.ru/sl/XMNhVd5RNSjvfnHRu)
+Flutter plugin for [Sber ID](https://developers.sber.ru/docs/ru/sberid/service/overview) on **iOS** and **Android**. It wraps the native SDKs:
 
-- Android: [SIDSDK_CORE](https://developers.sber.ru/docs/ru/sberid/sdk/androidsdk/core/quick-start) и при необходимости ELK
-- iOS: [SIDSDK](https://developers.sber.ru/docs/ru/sberid/sdk/iossdk/connection) через SPM или CocoaPods
+**Support the project:** [SberBank Online collection](https://messenger.sbrf.ru/sl/XMNhVd5RNSjvfnHRu)
 
-## Возможности
+- Android: [SIDSDK_CORE](https://developers.sber.ru/docs/ru/sberid/sdk/androidsdk/core/quick-start) and, when needed, ELK
+- iOS: [SIDSDK](https://developers.sber.ru/docs/ru/sberid/sdk/iossdk/connection) via Swift Package Manager or CocoaPods
 
-- Инициализация SDK: `clientId`, `redirectUri`, scopes, стенд
-- Вход с PKCE: в Dart возвращаются `authCode`, `state`, `nonce` и **`codeVerifier`**
-- Режимы входа: `standard`, `web` (OIDC / Custom Tab), `webView`, `autoAuth`, **`seamless`**
-- Бесшовный вход из приложения СберБанка (`extractSsoBaseUrl`, `loginSeamless`, deeplink при холодном старте на Android)
-- Нативная кнопка **Сбер ID** (`SBerIdButton`, Platform View)
-- Нативный **Единый личный кабинет** (`SBerIdElkContainer`, Platform View)
-- Проверка, установлено ли приложение СберБанка
-- Выход из сессии
+## Features
 
-## Платформы
+- SDK setup: `clientId`, `redirectUri`, scopes, stand
+- PKCE login: Dart receives `authCode`, `state`, `nonce`, and **`codeVerifier`**
+- Login modes: `standard`, `web` (OIDC / Custom Tab), `webView`, `autoAuth`, **`seamless`**
+- Seamless sign-in from the SberBank app (`extractSsoBaseUrl`, `loginSeamless`, cold-start deeplink on Android)
+- Native **Sber ID** button (`SBerIdButton`, platform view)
+- Native personal cabinet (`SBerIdElkContainer`, platform view)
+- Check whether the SberBank app is installed
+- Logout
 
-| Платформа | Минимум | Нативный SDK |
-|-----------|---------|--------------|
-| iOS       | 15.0+   | SIDSDK ~> 4.0.2 |
-| Android   | API 26+ | SIDSDK_CORE 1.8.0, SIDSDK_ELK 1.8.0 |
+## Platforms
 
-## Установка
+| Platform | Minimum | Native SDK |
+|----------|---------|------------|
+| iOS      | 15.0+   | SIDSDK ~> 4.0.2 |
+| Android  | API 26+ | SIDSDK_CORE 1.8.0, SIDSDK_ELK 1.8.0 |
+
+## Install
 
 ```yaml
 dependencies:
-  sber_id_sdk: ^0.2.0
+  sber_id_sdk: ^0.2.1
 ```
 
-С GitHub, пока пакет не опубликован на pub.dev. Тега `v0.2.0` в репозитории нет: в `ref` укажите коммит, а не этот тег.
+From GitHub, when you need a specific revision. Put a commit in `ref`.
 
 ```yaml
 dependencies:
@@ -42,18 +44,18 @@ dependencies:
       ref: <commit>
 ```
 
-## Настройка iOS
+## iOS setup
 
-Плагин собирается через **Swift Package Manager** (предпочтительно с Flutter 3.24+) и через **CocoaPods**.
+The plugin builds with **Swift Package Manager** (preferred on Flutter 3.24+) and with **CocoaPods**.
 
 ```bash
 flutter config --enable-swift-package-manager
 ```
 
-Макет SPM: [`ios/sber_id/Package.swift`](ios/sber_id/Package.swift) (зависимости `SIDSDK` и `FlutterFramework` подключаются при сборке).
+SPM manifest: [`ios/sber_id_sdk/Package.swift`](ios/sber_id_sdk/Package.swift). `SIDSDK` and `FlutterFramework` are linked at build time.
 
-1. **Deployment target** 15.0+ (`ios/Podfile` или Xcode).
-2. **URL scheme** в `Info.plist` должен совпадать с `redirectUri`:
+1. **Deployment target** 15.0+ (`ios/Podfile` or Xcode).
+2. The **URL scheme** in `Info.plist` must match `redirectUri`:
 
 ```xml
 <key>CFBundleURLTypes</key>
@@ -69,12 +71,12 @@ flutter config --enable-swift-package-manager
 </array>
 ```
 
-3. **LSApplicationQueriesSchemes** и **NSAppTransportSecurity** для `id.sber.ru` — см. [настройку проекта](https://developers.sber.ru/docs/ru/sberid/sdk/iossdk/configuration).
-4. **AppToken / ELK** (необязательно): `AppIdentifierPrefix` и группа Keychain `ru.sid.iphone.shared` — см. [руководство ELK для iOS](https://developers.sber.ru/docs/ru/sberid/elk/ios/manualios).
-5. Если приложение использует UIScene (как example), нужен **SceneDelegate**. Метод `application(_:open:options:)` в этом случае не вызывается: плагин не получает redirect, и `login()` завершается с `AUTH_CANCELLED`. Передайте URL в плагин и затем вызовите `super`, чтобы другой SDK мог обработать свою ссылку:
+3. **LSApplicationQueriesSchemes** and **NSAppTransportSecurity** for `id.sber.ru`. See the [project setup guide](https://developers.sber.ru/docs/ru/sberid/sdk/iossdk/configuration).
+4. **AppToken / ELK** (optional): `AppIdentifierPrefix` and the Keychain group `ru.sid.iphone.shared`. See the [iOS ELK guide](https://developers.sber.ru/docs/ru/sberid/elk/ios/manualios).
+5. If the app uses UIScene (the example does), add a **SceneDelegate**. `application(_:open:options:)` is not called, the plugin never sees the redirect, and `login()` finishes with `AUTH_CANCELLED`. Pass the URL to the plugin, then call `super`, so another SDK can handle its own link:
 
 ```swift
-import sber_id
+import sber_id_sdk
 
 override func scene(
   _ scene: UIScene,
@@ -87,13 +89,13 @@ override func scene(
 }
 ```
 
-До продакшена зарегистрируйте `clientId` и `redirectUri` в Сбер ID: **support_sberid@sber.ru**.
+Before production, register `clientId` and `redirectUri` with Sber ID: **support_sberid@sber.ru**.
 
-## Настройка Android
+## Android setup
 
-1. **minSdk 26** в `android/app/build.gradle`.
-2. **`MainActivity` наследует `FlutterFragmentActivity`**, не `FlutterActivity`. Обычный вход вызывает `SIDLogin.loginWithID`, которому нужен `FragmentActivity`. С `FlutterActivity` плагин вернёт `NO_ACTIVITY` / `AUTH_ERROR`, и шторка Сбера не откроется.
-3. **Видимость пакетов** (`<queries>`). На Android 11+ приложение Сбера не видно, пока его не объявить. Тогда `isSBerIdInstalled()` будет `false`, и нативный вход не откроет приложение банка:
+1. **minSdk 26** in `android/app/build.gradle`.
+2. **`MainActivity` extends `FlutterFragmentActivity`**, not `FlutterActivity`. The standard login calls `SIDLogin.loginWithID`, which needs a `FragmentActivity`. With `FlutterActivity` the plugin returns `NO_ACTIVITY` / `AUTH_ERROR` and the Sber sheet does not open.
+3. **Package visibility** (`<queries>`). On Android 11+ the Sber app is invisible until you declare it. Then `isSBerIdInstalled()` is `false` and native login does not open the bank app:
 
 ```xml
 <queries>
@@ -110,7 +112,7 @@ override func scene(
 </queries>
 ```
 
-4. **Deeplink** на `MainActivity` ([быстрый старт, §5.1](https://developers.sber.ru/docs/ru/sberid/sdk/androidsdk/core/quick-start)). `android:launchMode="singleTop"`. Scheme и host должны совпадать со строкой `SBerIdConfig.redirectUri` (в example это `sberidexample://auth`):
+4. **Deeplink** on `MainActivity` ([quick start, section 5.1](https://developers.sber.ru/docs/ru/sberid/sdk/androidsdk/core/quick-start)). `android:launchMode="singleTop"`. Scheme and host must match `SBerIdConfig.redirectUri` (the example uses `sberidexample://auth`):
 
 ```xml
 <activity
@@ -129,29 +131,29 @@ override func scene(
 </activity>
 ```
 
-5. **ELK** (необязательно): передайте `partnerProfileUrl` в `SBerIdConfig`. На Android вызывается `SIDELK.setProfileUrl`, на iOS — `applyMainPreferences(partnerProfileUrl:)`.
-6. Если переопределяете `onNewIntent`, вызовите `setIntent(intent)` до `super.onNewIntent(intent)`. Иначе redirect останется на старом intent, `login()` вернётся с `AUTH_CANCELLED`, а код будет только в `takePendingAuthResult()`.
+5. **ELK** (optional): pass `partnerProfileUrl` in `SBerIdConfig`. Android calls `SIDELK.setProfileUrl`. iOS calls `applyMainPreferences(partnerProfileUrl:)`.
+6. If you override `onNewIntent`, call `setIntent(intent)` before `super.onNewIntent(intent)`. Otherwise the redirect stays on the old intent, `login()` returns `AUTH_CANCELLED`, and the code is only available from `takePendingAuthResult()`.
 
-## ELK (Единый личный кабинет)
+## ELK (personal cabinet)
 
-ELK не заменяет экран входа: сначала пользователь должен войти через Сбер ID. Для AppToken и перехода на сайт партнёра добавьте scope `mapp_sso` и смотрите документацию:
+ELK does not replace the login screen: the user signs in with Sber ID first. For AppToken and the jump to the partner site, add the `mapp_sso` scope and follow the docs:
 
 - Android: [ELK Android SDK](https://developers.sber.ru/docs/ru/sberid/elk/androidsdk/android)
-- iOS: [руководство ELK](https://developers.sber.ru/docs/ru/sberid/elk/ios/manualios) (группа Keychain `ru.sid.iphone.shared`, `AppIdentifierPrefix` в Info.plist)
+- iOS: [ELK guide](https://developers.sber.ru/docs/ru/sberid/elk/ios/manualios) (Keychain group `ru.sid.iphone.shared`, `AppIdentifierPrefix` in Info.plist)
 
 ```dart
 await SBerId.instance.initialize(
   SBerIdConfig(
     clientId: '...',
     redirectUri: 'yourapp://auth',
-    partnerName: 'Ваше приложение',
+    partnerName: 'Your app',
     partnerProfileUrl: 'https://your-profile-url-from-sber',
-    userId: 'необязательно при инициализации',
+    userId: 'optional at init',
     scopes: ['openid', 'name', 'email', 'mapp_sso'],
   ),
 );
 
-// После входа: OIDC sub или id пользователя партнёра для виджетов ELK
+// After login: OIDC sub or the partner user id for ELK widgets
 await SBerId.instance.setUserId(userSub);
 
 SBerIdElkContainer(
@@ -162,16 +164,16 @@ SBerIdElkContainer(
 );
 ```
 
-| Параметр | Android | iOS |
-|----------|---------|-----|
-| `partnerProfileUrl` | `SIDELK.setProfileUrl` при инициализации | `applyMainPreferences` |
+| Parameter | Android | iOS |
+|-----------|---------|-----|
+| `partnerProfileUrl` | `SIDELK.setProfileUrl` during init | `applyMainPreferences` |
 | `userId` | `SID.Settings.setMainSettings(userID)` | `applyMainPreferences(userID:)` |
-| `partnerName` | в SID 1.8 поля настроек нет, в Dart параметр всё равно обязательный | `applyMainPreferences(partnerName:)` |
-| `setUserId()` | обновляет user id после входа | то же |
+| `partnerName` | SID 1.8 has no settings field for it; the Dart parameter is still required | `applyMainPreferences(partnerName:)` |
+| `setUserId()` | updates the user id after login | same |
 
-Экран в example: **демо ELK** (`example/lib/elk_screen.dart`).
+Example screen: **ELK demo** (`example/lib/elk_screen.dart`).
 
-## Использование
+## Usage
 
 ```dart
 import 'package:sber_id_sdk/sber_id_sdk.dart';
@@ -180,17 +182,17 @@ await SBerId.instance.initialize(
   SBerIdConfig(
     clientId: 'your-client-id',
     redirectUri: 'yourapp://auth',
-    partnerName: 'Ваше приложение',
-    partnerProfileUrl: 'https://your-profile-url', // необязательно, для ELK
+    partnerName: 'Your app',
+    partnerProfileUrl: 'https://your-profile-url', // optional, for ELK
   ),
 );
 
-// Обычный вход: приложение Сбера, иначе веб
+// Standard login: Sber app, otherwise web
 final response = await SBerId.instance.login(
   options: SBerIdLoginOptions(mode: SBerIdLoginMode.standard),
 );
 
-// Веб / OIDC
+// Web / OIDC
 await SBerId.instance.login(
   options: SBerIdLoginOptions(
     mode: SBerIdLoginMode.web,
@@ -198,15 +200,15 @@ await SBerId.instance.login(
   ),
 );
 
-// Нативная кнопка: свой onPressed или автоматический вход
+// Native button: your own onPressed, or automatic login
 SBerIdButton(
   clientId: 'your-client-id',
   onPressed: () async {
     final r = await SBerId.instance.login();
-    // обработайте r
+    // handle r
   },
 );
-// Без onPressed нажатие само вызывает login(mode: SBerIdLoginMode.standard)
+// Without onPressed, a tap calls login(mode: SBerIdLoginMode.standard)
 
 if (response?.isSuccess == true) {
   await yourBackend.exchange(
@@ -219,9 +221,9 @@ if (response?.isSuccess == true) {
 }
 ```
 
-**Шаг 2 OAuth (обмен code на токены на сервере):** см. [doc/OAUTH_BACKEND.md](doc/OAUTH_BACKEND.md) — PKCE, `state`/`nonce`, типичные ошибки `invalid_grant`.
+**OAuth step 2 (exchange the code for tokens on your server):** see [doc/OAUTH_BACKEND.md](doc/OAUTH_BACKEND.md). It covers PKCE, `state` / `nonce`, and typical `invalid_grant` errors.
 
-## Режимы входа
+## Login modes
 
 | Dart `SBerIdLoginMode` | Android | iOS |
 |------------------------|---------|-----|
@@ -231,28 +233,28 @@ if (response?.isSuccess == true) {
 | `autoAuth` | `autoAuth` | `autoAuth` |
 | `seamless` | `getSeamlessUriScheme` + `autoAuth` | `SIDUtils.getSSOUrlStringFrom` + `autoAuth` |
 
-## Бесшовный вход из приложения СберБанка
+## Seamless sign-in from the SberBank app
 
-Если пользователь открыл ваше приложение из СберБанка по deeplink с параметром `sberIDRedirect`, используйте бесшовный вход:
+If the user opened your app from SberBank by a deeplink with `sberIDRedirect`, use seamless login:
 
 ```dart
-// Базовый SSO URL из deeplink (необязательно: loginSeamless делает это сам)
+// Base SSO URL from the deeplink (optional: loginSeamless does this itself)
 final sso = await SBerId.instance.extractSsoBaseUrl(deeplink);
 
 final response = await SBerId.instance.loginSeamless(
   seamlessDeeplink: deeplink,
 );
 
-// Холодный старт на Android: deeplink в intent запуска
+// Android cold start: deeplink from the launch intent
 final launchDeeplink = await SBerId.instance.getLaunchSeamlessDeeplink();
 if (launchDeeplink != null) {
   await SBerId.instance.loginSeamless(seamlessDeeplink: launchDeeplink);
 }
 ```
 
-На iOS обратный URL должен попасть в `SberIdPlugin.handleURL` (см. SceneDelegate выше). `getLaunchSeamlessDeeplink` есть только на Android: на iOS метод возвращает `null`.
+On iOS the return URL must reach `SberIdPlugin.handleURL` (see SceneDelegate above). `getLaunchSeamlessDeeplink` exists only on Android. On iOS it returns `null`.
 
-Нативный SDK часто завершает вход с `AUTH_CANCELLED` раньше, чем приходит redirect, либо Android пересоздаёт activity и `login()` не возобновляется. Код при этом сохраняется нативно. Не отправляйте код на бэкенд без `codeVerifier`. Прочитайте сохранённый результат после `login()` и ещё раз, когда приложение снова станет активным:
+The native SDK often finishes login with `AUTH_CANCELLED` before the redirect arrives, or Android recreates the activity and `login()` does not resume. The code is still stored natively. Do not send a code to the backend without `codeVerifier`. Read the stored result after `login()`, and again when the app becomes active:
 
 ```dart
 final pending = await SBerId.instance.takePendingAuthResult();
@@ -260,55 +262,56 @@ if (pending != null &&
     pending.isSuccess &&
     pending.hasAuthCode &&
     (pending.codeVerifier?.isNotEmpty ?? false)) {
-  // обмен pending.authCode + pending.codeVerifier
+  // exchange pending.authCode + pending.codeVerifier
 }
 ```
 
-`takePendingAuthResult()` отдаёт результат один раз. На iOS метод ничего не делает (`null`), пока результат не был сохранён. Example в этом репозитории после отмены несколько секунд опрашивает Android.
+`takePendingAuthResult()` returns the result once. On iOS it does nothing (`null`) until a result has been stored. The example in this repo polls Android for a few seconds after a cancel.
 
-## Пример
+## Example
 
 ```bash
 cd example
 flutter run
 ```
 
-## Ошибки
+## Errors
 
-`login()` всегда завершается объектом [SBerIdAuthResponse] и не бросает исключение при неуспешном входе. Смотрите `isSuccess`, `errorCode` и `isCancelled`.
+`login()` always completes with a [SBerIdAuthResponse] and does not throw when sign-in fails. Check `isSuccess`, `errorCode`, and `isCancelled`.
 
-| `errorCode` | Значение |
-|-------------|----------|
-| `AUTH_CANCELLED` | Пользователь закрыл веб или Safari, либо сценарий закончился без redirect |
-| `LOGIN_SUPERSEDED` | Новый `login()` заменил ещё не завершённый |
-| `INVALID_REDIRECT` | Scheme или host входящего URL не совпадает с `redirectUri` |
-| `NOT_INITIALIZED` | Не вызван `initialize()` |
-| `NO_ACTIVITY` / `NO_VIEW_CONTROLLER` | Нет Activity или контроллера на переднем плане |
-| `AUTH_ERROR` | SDK или сервер отклонили вход |
+| `errorCode` | Meaning |
+|-------------|---------|
+| `AUTH_CANCELLED` | The user closed web or Safari, or the flow ended without a redirect |
+| `LOGIN_SUPERSEDED` | A new `login()` replaced one that had not finished |
+| `INVALID_REDIRECT` | Scheme or host of the incoming URL does not match `redirectUri` |
+| `NOT_INITIALIZED` | `initialize()` was not called |
+| `NO_ACTIVITY` / `NO_VIEW_CONTROLLER` | No foreground Activity or view controller |
+| `AUTH_ERROR` | The SDK or the server rejected the login |
 
-`initialize()`, `setUserId()` и `logout()` при ошибке платформы бросают [SBerIdException].
+`initialize()`, `setUserId()`, and `logout()` throw [SBerIdException] on a platform error.
 
 ```dart
 final r = await SBerId.instance.login();
 if (r?.isCancelled == true) {
-  // пользователь закрыл вход
+  // the user closed the login
 } else if (r?.isSuccess != true) {
   debugPrint('${r?.errorCode}: ${r?.error}');
 }
 ```
 
-## Поддержать проект
+## Support the project
 
-Сбор на развитие плагина в СберБанк Онлайн:  
+SberBank Online collection for this plugin:
+
 https://messenger.sbrf.ru/sl/XMNhVd5RNSjvfnHRu
 
-## Поддержка
+## Support
 
-- Вопросы по плагину: [GitHub](https://github.com/Mihalcov/sber_id/issues)
-- SDK Сбер ID: support_sberid@sber.ru
+- Plugin issues: [GitHub](https://github.com/Mihalcov/sber_id/issues)
+- Sber ID SDK: support_sberid@sber.ru
 
-## Лицензия
+## License
 
-Код плагина: MIT (`LICENSE`).
+Plugin code: MIT (`LICENSE`).
 
-Нативные SDK Сбер ID (SIDSDK, SIDSDK_CORE, SIDSDK_ELK) — сторонние библиотеки со своими лицензиями: [sid-sdk](https://github.com/sid-sdk/SIDSDK) и Maven Central. Проверьте их до публикации приложения, которое зависит от этого плагина.
+The Sber ID native SDKs (SIDSDK, SIDSDK_CORE, SIDSDK_ELK) are third-party libraries with their own licenses: [sid-sdk](https://github.com/sid-sdk/SIDSDK) and Maven Central. Check them before you ship an app that depends on this plugin.

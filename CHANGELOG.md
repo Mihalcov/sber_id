@@ -1,7 +1,14 @@
+## 0.2.1
+
+- English `description` and `README.md` so pub.dev can score the package. Russian guide: `doc/README.ru.md`
+- iOS Swift package moved to `ios/sber_id_sdk/Package.swift` for Swift Package Manager
+- CocoaPods spec `ios/sber_id_sdk.podspec` reads sources from that directory. SceneDelegate still uses `import sber_id_sdk`
+
 ## 0.2.0
 
 - Android: SIDSDK_CORE 1.8.0 и SIDSDK_ELK 1.8.0
 - iOS: SIDSDK ~> 4.0.2, минимальная версия iOS 15.0
+- iOS-модуль CocoaPods называется `sber_id_sdk`: в SceneDelegate нужен `import sber_id_sdk`
 - Нативный iOS SDK 4 бросает ошибку из методов входа. `login()` в Dart по-прежнему возвращает `SBerIdAuthResponse` и не бросает исключение при отмене или ошибке входа
 - Android: `takePendingAuthResult()` возвращает код, если активность пересоздалась во время входа
 - Example и README: `FlutterFragmentActivity`, `<queries>` пакетов Сбера, SceneDelegate передаёт redirect в `SberIdPlugin.handleURL`, пример дожидается `takePendingAuthResult()`

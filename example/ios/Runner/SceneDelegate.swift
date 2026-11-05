@@ -1,6 +1,6 @@
 import Flutter
 import UIKit
-import sber_id
+import sber_id_sdk
 
 class SceneDelegate: FlutterSceneDelegate {
   override func scene(
