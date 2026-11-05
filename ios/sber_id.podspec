@@ -12,9 +12,9 @@ Flutter plugin for Sber ID authentication on iOS and Android.
   s.source_files = 'sber_id/Sources/sber_id/**/*.swift'
   s.resource_bundles = { 'sber_id_privacy' => ['sber_id/Sources/sber_id/PrivacyInfo.xcprivacy'] }
   s.dependency 'Flutter'
-  s.dependency 'SIDSDK', '~> 1.7.4'
-  s.platform = :ios, '14.0'
-  s.ios.deployment_target = '14.0'
+  s.dependency 'SIDSDK', '~> 4.0.2'
+  s.platform = :ios, '15.0'
+  s.ios.deployment_target = '15.0'
   s.swift_version = '5.0'
 
   s.pod_target_xcconfig = {

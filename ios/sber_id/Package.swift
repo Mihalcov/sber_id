@@ -6,14 +6,14 @@ import PackageDescription
 let package = Package(
     name: "sber_id",
     platforms: [
-        .iOS("14.0"),
+        .iOS("15.0"),
     ],
     products: [
         .library(name: "sber-id", targets: ["sber_id"]),
     ],
     dependencies: [
         .package(name: "FlutterFramework", path: "../FlutterFramework"),
-        .package(url: "https://github.com/sid-sdk/SIDSDK", from: "1.7.4"),
+        .package(url: "https://github.com/sid-sdk/SIDSDK", from: "4.0.2"),
     ],
     targets: [
         .target(

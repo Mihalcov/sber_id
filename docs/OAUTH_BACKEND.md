@@ -56,6 +56,8 @@ Future<void> signInWithSber() async {
 Эндпоинт Sber (prod): `POST https://oauth.sber.ru/ru/prod/tokens/v2/oidc`  
 Тестовый контур (IFT): `https://oauth-ift.sber.ru/ru/prod/tokens/v2/oidc`
 
+**Prod требует mTLS:** клиентский `.p12`, выпущенный в кабинете Sber ID для этого `client_id` (CN сертификата = client_id). См. [FAQ по сертификатам](https://developers.sber.ru/docs/ru/sberid/faq/a2-work-with-certificates). На сервере oauth.sber.ru — УЦ Минцифры; в trust store нужен корневой CA РФ.
+
 ```
 POST /ru/prod/tokens/v2/oidc
 Content-Type: application/x-www-form-urlencoded

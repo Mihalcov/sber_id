@@ -3,7 +3,7 @@ import SIDSDK
 import UIKit
 
 private final class SberIdElkHeightDelegate: NSObject, SIDTableViewHeightDelegate {
-    func updateHeight() {}
+    func updateHeight(height: CGFloat) {}
 }
 
 private final class SberIdElkEventHandler: NSObject, SIDElkEventHandler {

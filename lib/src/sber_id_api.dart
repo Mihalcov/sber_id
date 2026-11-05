@@ -47,6 +47,11 @@ class SBerId {
     return SBerIdPlatform.instance.getLaunchSeamlessDeeplink();
   }
 
+  /// Auth result saved after redirect when Activity/engine was recreated (Android).
+  Future<SBerIdAuthResponse?> takePendingAuthResult() {
+    return SBerIdPlatform.instance.takePendingAuthResult();
+  }
+
   /// Sets partner user id for ELK (call after successful login).
   Future<void> setUserId(String userId) {
     return SBerIdPlatform.instance.setUserId(userId);

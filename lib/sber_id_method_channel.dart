@@ -81,6 +81,17 @@ class MethodChannelSBerId extends SBerIdPlatform {
   }
 
   @override
+  Future<SBerIdAuthResponse?> takePendingAuthResult() async {
+    try {
+      final result = await methodChannel.invokeMethod('takePendingAuthResult');
+      if (result == null) return null;
+      return SBerIdAuthResponse.fromMap(Map<String, dynamic>.from(result as Map));
+    } catch (_) {
+      return null;
+    }
+  }
+
+  @override
   Future<void> setUserId(String userId) async {
     try {
       await methodChannel.invokeMethod('setUserId', {'userId': userId});

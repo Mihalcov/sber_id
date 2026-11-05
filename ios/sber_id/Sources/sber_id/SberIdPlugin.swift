@@ -150,33 +150,59 @@ public class SberIdPlugin: NSObject, FlutterPlugin {
             let svcRedirect = args?["customTabRedirectUri"] as? String
                 ?? args?["svcRedirectUrlString"] as? String
                 ?? redirectUri
-            let success = SID.login.webAuth(
-                request: request,
-                svcRedirectUrlString: svcRedirect,
-                viewController: vc
-            )
-            if !success {
-                self.completeAuthFailure(code: "AUTH_ERROR", message: "Failed to start web authentication")
+            do {
+                try SID.login.webAuth(
+                    request: request,
+                    svcRedirectUrlString: svcRedirect,
+                    viewController: vc
+                )
+            } catch {
+                self.completeAuthFailure(
+                    code: "AUTH_ERROR",
+                    message: error.message ?? "Failed to start web authentication"
+                )
             }
         case "webView":
-            SID.login.loginWithIDToWebView(
-                request: request,
-                viewController: vc,
-                delegate: webViewDelegate
-            )
+            do {
+                try SID.login.loginWithIDToWebView(
+                    request: request,
+                    viewController: vc,
+                    delegate: webViewDelegate
+                )
+            } catch {
+                self.completeAuthFailure(
+                    code: "AUTH_ERROR",
+                    message: error.message ?? "Failed to start WebView authentication"
+                )
+            }
         case "autoAuth", "seamless":
-            SID.login.autoAuth(request: request) { success in
+            SID.login.autoAuth(request: request) { authResult in
                 DispatchQueue.main.async {
-                    if !success {
+                    switch authResult {
+                    case .success(let opened) where !opened:
                         self.completeAuthFailure(
                             code: "AUTH_ERROR",
                             message: "autoAuth failed to open Sber app"
                         )
+                    case .failure(let error):
+                        self.completeAuthFailure(
+                            code: "AUTH_ERROR",
+                            message: error.message ?? "autoAuth failed to open Sber app"
+                        )
+                    case .success:
+                        break
                     }
                 }
             }
         default:
-            SID.login.auth(request: request, viewController: vc)
+            do {
+                try SID.login.auth(request: request, viewController: vc)
+            } catch {
+                self.completeAuthFailure(
+                    code: "AUTH_ERROR",
+                    message: error.message ?? "Failed to start Sber ID authentication"
+                )
+            }
         }
     }
 

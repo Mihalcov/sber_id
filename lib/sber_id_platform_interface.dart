@@ -43,6 +43,11 @@ abstract class SBerIdPlatform extends PlatformInterface {
     throw UnimplementedError('getLaunchSeamlessDeeplink() has not been implemented.');
   }
 
+  /// Returns auth code saved after redirect if the Flutter engine was recreated mid-login.
+  Future<SBerIdAuthResponse?> takePendingAuthResult() {
+    throw UnimplementedError('takePendingAuthResult() has not been implemented.');
+  }
+
   /// Updates ELK user id after login ([userId] in Sber settings).
   Future<void> setUserId(String userId) {
     throw UnimplementedError('setUserId() has not been implemented.');
