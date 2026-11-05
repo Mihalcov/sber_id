@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:sber_id/sber_id.dart';
+import 'package:sber_id_sdk/sber_id_sdk.dart';
 
 import 'elk_screen.dart';
 
@@ -15,7 +15,7 @@ class SberIdExampleApp extends StatefulWidget {
   State<SberIdExampleApp> createState() => _SberIdExampleAppState();
 }
 
-class _SberIdExampleAppState extends State<SberIdExampleApp> {
+class _SberIdExampleAppState extends State<SberIdExampleApp> with WidgetsBindingObserver {
   static const _clientId = 'YOUR_CLIENT_ID';
   static const _redirectUri = 'sberidexample://auth';
   static const _partnerName = 'Sber ID Example';
@@ -26,9 +26,11 @@ class _SberIdExampleAppState extends State<SberIdExampleApp> {
 
   String _status = 'Not initialized';
   bool _initialized = false;
+  bool _loginInProgress = false;
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _seamlessController.dispose();
     super.dispose();
   }
@@ -36,7 +38,15 @@ class _SberIdExampleAppState extends State<SberIdExampleApp> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _init();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed && _initialized && !_loginInProgress) {
+      _recoverPending();
+    }
   }
 
   Future<void> _init() async {
@@ -54,30 +64,86 @@ class _SberIdExampleAppState extends State<SberIdExampleApp> {
         _initialized = true;
         _status = 'SDK initialized';
       });
+      await _recoverPending();
     } catch (e) {
       setState(() => _status = 'Init error: $e');
     }
   }
 
+  /// SDK often reports cancel before the redirect is delivered, or the activity
+  /// is recreated and login() never resumes. The code then sits in native storage.
+  bool _shouldWait(SBerIdAuthResponse? response) {
+    if (_canExchange(response)) return false;
+    if (response == null || response.isCancelled) return true;
+    return response.isSuccess &&
+        response.hasAuthCode &&
+        (response.codeVerifier == null || response.codeVerifier!.isEmpty);
+  }
+
+  bool _canExchange(SBerIdAuthResponse? response) {
+    return response != null &&
+        response.isSuccess &&
+        response.hasAuthCode &&
+        (response.codeVerifier?.isNotEmpty ?? false);
+  }
+
+  Future<SBerIdAuthResponse?> _waitForPending() async {
+    for (var i = 0; i < 20; i++) {
+      await Future<void>.delayed(const Duration(milliseconds: 250));
+      final late = await SBerId.instance.takePendingAuthResult();
+      if (_canExchange(late)) return late;
+    }
+    return null;
+  }
+
+  Future<void> _recoverPending() async {
+    final pending = await SBerId.instance.takePendingAuthResult();
+    if (!_canExchange(pending) || !mounted) return;
+    setState(() => _status = _format(pending));
+  }
+
+  String _format(SBerIdAuthResponse? response) {
+    if (_canExchange(response)) {
+      return 'Success\nauthCode: ${response!.authCode}\ncodeVerifier: ${response.codeVerifier}';
+    }
+    if (response?.isSuccess == true && response!.hasAuthCode) {
+      return 'Code without codeVerifier. Do not exchange it; call takePendingAuthResult() again.';
+    }
+    return 'Failed: ${response?.errorCode ?? "unknown"} ${response?.error ?? ""}'.trim();
+  }
+
+  Future<SBerIdAuthResponse?> _loginAndRecover(SBerIdLoginMode mode) async {
+    var response = await SBerId.instance.takePendingAuthResult();
+    if (!_canExchange(response)) {
+      response = await SBerId.instance.login(
+        options: SBerIdLoginOptions(mode: mode),
+      );
+    }
+    if (_shouldWait(response)) {
+      response = await _waitForPending() ?? response;
+    }
+    return response;
+  }
+
   Future<void> _loginSeamlessFromField(TextEditingController controller) async {
-    if (!_initialized) return;
+    if (!_initialized || _loginInProgress) return;
     final deeplink = controller.text.trim();
     if (deeplink.isEmpty) {
       setState(() => _status = 'Enter seamless deeplink from Sber Bank');
       return;
     }
+    _loginInProgress = true;
     setState(() => _status = 'Parsing SSO...');
-    final sso = await SBerId.instance.extractSsoBaseUrl(deeplink);
-    setState(() => _status = 'ssoBaseUrl: ${sso ?? "(null)"}\nStarting seamless login...');
-    final response = await SBerId.instance.loginSeamless(seamlessDeeplink: deeplink);
-    setState(() {
-      if (response?.isSuccess == true) {
-        _status =
-            'Seamless OK\nauthCode: ${response?.authCode}\ncodeVerifier: ${response?.codeVerifier}';
-      } else {
-        _status = 'Seamless failed: ${response?.error ?? "unknown"}';
-      }
-    });
+    try {
+      final sso = await SBerId.instance.extractSsoBaseUrl(deeplink);
+      setState(() => _status = 'ssoBaseUrl: ${sso ?? "(null)"}\nStarting seamless login...');
+      final response = await SBerId.instance.loginSeamless(seamlessDeeplink: deeplink);
+      final ready = _shouldWait(response) ? (await _waitForPending() ?? response) : response;
+      if (!mounted) return;
+      setState(() => _status = 'Seamless\n${_format(ready)}');
+    } finally {
+      _loginInProgress = false;
+    }
   }
 
   Future<void> _checkLaunchSeamless() async {
@@ -89,19 +155,16 @@ class _SberIdExampleAppState extends State<SberIdExampleApp> {
   }
 
   Future<void> _login(SBerIdLoginMode mode) async {
-    if (!_initialized) return;
+    if (!_initialized || _loginInProgress) return;
+    _loginInProgress = true;
     setState(() => _status = 'Authenticating (${mode.name})...');
-    final response = await SBerId.instance.login(
-      options: SBerIdLoginOptions(mode: mode),
-    );
-    setState(() {
-      if (response?.isSuccess == true) {
-        _status =
-            'Success\nauthCode: ${response?.authCode}\ncodeVerifier: ${response?.codeVerifier}';
-      } else {
-        _status = 'Failed: ${response?.error ?? "unknown"}';
-      }
-    });
+    try {
+      final response = await _loginAndRecover(mode);
+      if (!mounted) return;
+      setState(() => _status = _format(response));
+    } finally {
+      _loginInProgress = false;
+    }
   }
 
   @override
@@ -111,8 +174,7 @@ class _SberIdExampleAppState extends State<SberIdExampleApp> {
         appBar: AppBar(title: const Text('Sber ID Example')),
         body: Padding(
           padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
+          child: ListView(
             children: [
               Text(_status),
               const SizedBox(height: 16),

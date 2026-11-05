@@ -49,5 +49,16 @@
             <action android:name="android.intent.action.PROCESS_TEXT"/>
             <data android:mimeType="text/plain"/>
         </intent>
+        <!-- Android 11+ hides these unless declared. Without them the Sber app looks missing. -->
+        <package android:name="ru.sberbankmobile" />
+        <package android:name="ru.sberbank_sbbol" />
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="sberbankidexternallogin" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="sbolidexternallogin" />
+        </intent>
     </queries>
 </manifest>

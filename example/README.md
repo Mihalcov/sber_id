@@ -1,17 +1,16 @@
 # sber_id_example
 
-A new Flutter project.
+Хост для проверки `sber_id_sdk`. Перед запуском замените `YOUR_CLIENT_ID` в `lib/main.dart` и зарегистрируйте redirect `sberidexample://auth` в кабинете Sber ID.
 
-## Getting Started
+Сборка повторяет то, без чего вход в хост-приложении обрывался:
 
-This project is a starting point for a Flutter application.
+- Android `MainActivity` — `FlutterFragmentActivity`, не `FlutterActivity`
+- `minSdk` 26, `launchMode=singleTop`, intent-filter `sberidexample://auth`
+- `<queries>` на `ru.sberbankmobile`, `ru.sberbank_sbbol` и схемы Сбера
+- iOS 15+, URL scheme `sberidexample`, `LSApplicationQueriesSchemes`
+- `SceneDelegate` передаёт redirect в `SberIdPlugin.handleURL`
+- после `login()` пример читает `takePendingAuthResult()`, если SDK успел вернуть отмену раньше redirect
 
-A few resources to get you started if this is your first Flutter project:
+Обмен `authCode` на токены в пример не входит. Его делает только бэкенд: [doc/OAUTH_BACKEND.md](../doc/OAUTH_BACKEND.md). Код без `codeVerifier` на сервер не отправляют.
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+ELK-экран не включает keychain group `ru.sid.iphone.shared`. Для AppToken на iOS entitlement нужно добавить в своё приложение.

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:sber_id/sber_id.dart';
+import 'package:sber_id_sdk/sber_id_sdk.dart';
 
 /// Minimal ELK demo. Requires real [clientId], login, and [partnerProfileUrl] from Sber.
 class ElkDemoScreen extends StatefulWidget {
@@ -51,7 +51,8 @@ class _ElkDemoScreenState extends State<ElkDemoScreen> {
             '1. Initialize with partnerProfileUrl\n'
             '2. Login (scope mapp_sso for AppToken on iOS/Android)\n'
             '3. setUserId after login\n'
-            '4. ELK container below',
+            '4. ELK container below\n'
+            'iOS AppToken also needs the keychain group ru.sid.iphone.shared. This example does not add that entitlement.',
             style: TextStyle(fontSize: 13),
           ),
           const SizedBox(height: 12),

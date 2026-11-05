@@ -4,14 +4,21 @@ import 'models/sber_id_login_mode.dart';
 import 'models/sber_id_login_options.dart';
 import '../sber_id_platform_interface.dart';
 
+/// Entry point for Sber ID authentication on iOS and Android.
+///
+/// Call [initialize] once, then [login]. Send [SBerIdAuthResponse.authCode]
+/// and [SBerIdAuthResponse.codeVerifier] to your backend (PKCE).
 class SBerId {
   SBerId._();
   static final SBerId instance = SBerId._();
 
+  /// Applies [config] to the native Sber ID SDK. Call once before [login].
   Future<void> initialize(SBerIdConfig config) async {
     return SBerIdPlatform.instance.initialize(config);
   }
 
+  /// Starts Sber ID authentication. Completes with [SBerIdAuthResponse]
+  /// (including failures). Does not throw on a cancelled or failed login.
   Future<SBerIdAuthResponse?> login({
     SBerIdLoginOptions options = const SBerIdLoginOptions(),
     String? phone,
@@ -29,10 +36,12 @@ class SBerId {
     );
   }
 
+  /// Whether the Sber Bank app can be opened for native login.
   Future<bool> isSBerIdInstalled() async {
     return SBerIdPlatform.instance.isSBerIdInstalled();
   }
 
+  /// Ends the native Sber ID session.
   Future<void> logout() async {
     return SBerIdPlatform.instance.logout();
   }

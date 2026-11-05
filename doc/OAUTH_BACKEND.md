@@ -16,7 +16,7 @@
 ## Flutter → бэкенд
 
 ```dart
-import 'package:sber_id/sber_id.dart';
+import 'package:sber_id_sdk/sber_id_sdk.dart';
 
 Future<void> signInWithSber() async {
   await SBerId.instance.initialize(
@@ -129,6 +129,10 @@ function exchangeSberAuthCode(body):
 
 ## Пример в репозитории (ПЭС)
 
-- Flutter: `pes/lib/services/sber_auth_service.dart` → callable `exchangeSberAuthCode`
-- Backend: `pes/functions/src/sber.js`
-- Env: `SBER_CLIENT_ID`, `SBER_CLIENT_SECRET`, `SBER_REDIRECT_URI`, опционально `SBER_TOKEN_URL`
+Текущий обмен кода идёт в БрендКарта API, не через Firebase Callable:
+
+- Flutter: `brendkarta/pes/lib/providers/auth_provider.dart` вызывает `AuthRepository.signInWithSber`
+- Запрос: `POST /auth/sber` (`brendkarta-api/src/routes/auth.ts`, обмен в `src/auth/sber.ts`)
+- Env API: `SBER_CLIENT_ID`, `SBER_CLIENT_SECRET`, `SBER_REDIRECT_URI`, опционально `SBER_TOKEN_URL`, для prod mTLS — `SBER_P12_PATH` / `SBER_CERT_PATH`
+
+Старый callable `exchangeSberAuthCode` остаётся в `brendkarta/pes/functions/src/sber.js`. Файла `pes/lib/services/sber_auth_service.dart` нет.

@@ -1,8 +1,13 @@
-name: sber_id
-description: "Flutter plugin for Sber ID authentication (SIDSDK on iOS, SIDSDK_CORE on Android)."
-version: 0.0.1+1
+name: sber_id_sdk
+description: "Плагин Flutter для входа через Сбер ID на iOS и Android. Поддержать проект: https://messenger.sbrf.ru/sl/XMNhVd5RNSjvfnHRu"
+version: 0.2.0
 homepage: https://github.com/Mihalcov/sber_id
 repository: https://github.com/Mihalcov/sber_id
+issue_tracker: https://github.com/Mihalcov/sber_id/issues
+topics:
+  - authentication
+  - oauth
+  - sber
 
 environment:
   sdk: '>=3.0.0 <4.0.0'

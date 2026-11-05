@@ -1,7 +1,7 @@
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:sber_id/sber_id.dart';
-import 'package:sber_id/sber_id_method_channel.dart';
+import 'package:sber_id_sdk/sber_id_method_channel.dart';
+import 'package:sber_id_sdk/sber_id_sdk.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();

@@ -1,5 +1,6 @@
 package com.example.sber_id_example
 
-import io.flutter.embedding.android.FlutterActivity
+import io.flutter.embedding.android.FlutterFragmentActivity
 
-class MainActivity : FlutterActivity()
+// SIDLogin.loginWithID requires FragmentActivity. FlutterActivity fails standard login.
+class MainActivity : FlutterFragmentActivity()

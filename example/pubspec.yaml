@@ -1,5 +1,5 @@
 name: sber_id_example
-description: Example app for the sber_id Flutter plugin.
+description: Example app for the sber_id_sdk Flutter plugin.
 publish_to: 'none'
 version: 1.0.0+1
 
@@ -10,7 +10,7 @@ dependencies:
   flutter:
     sdk: flutter
   cupertino_icons: ^1.0.8
-  sber_id:
+  sber_id_sdk:
     path: ../
 
 dev_dependencies:

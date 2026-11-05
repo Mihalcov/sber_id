@@ -1,11 +1,12 @@
 Pod::Spec.new do |s|
   s.name             = 'sber_id'
-  s.version          = '0.0.1+1'
+  s.version          = '0.2.0'
   s.summary          = 'Sber ID authentication plugin for Flutter.'
   s.description      = <<-DESC
 Flutter plugin for Sber ID authentication on iOS and Android.
+iOS: SIDSDK 4.0.2, minimum iOS 15. Android: SIDSDK_CORE and SIDSDK_ELK 1.8.0.
                        DESC
-  s.homepage         = 'https://github.com/nurullohabduvohidov/sber_id'
+  s.homepage         = 'https://github.com/Mihalcov/sber_id'
   s.license          = { :file => '../LICENSE' }
   s.author           = { 'Nurulloh' => 'nabduvahed@gmail.com' }
   s.source           = { :path => '.' }
